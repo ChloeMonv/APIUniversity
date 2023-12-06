@@ -5,7 +5,7 @@ using ApiUniversity.Models;
 namespace ApiTodo.Controllers;
 
 [ApiController]
-[Route("api/todo")]
+[Route("api/student")]
 public class TodoController : ControllerBase
 {
     private readonly UniversityContext _context;
@@ -17,45 +17,46 @@ public class TodoController : ControllerBase
 
     // GET: api/todo
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+    public async Task<ActionResult<IEnumerable<StudentDTO>>> GetStudents()
     {
         // Get todos and related lists
-        var student = _context.Student;
+        var student = _context.Student.Select(x => new StudentDTO(x));
         return await student.ToListAsync();
     }
 
     // GET: api/todo/2
     [HttpGet("{id}")]
-    public async Task<ActionResult<Student>> GetStudent(int id)
+    public async Task<ActionResult<StudentDTO>> GetStudent(int id)
     {
         // Find todo and related list
         // SingleAsync() throws an exception if no todo is found (which is possible, depending on id)
         // SingleOrDefaultAsync() is a safer choice here
         var student = await _context.Student.SingleOrDefaultAsync(t => t.Id == id);
 
-        if (student == null)
-            return NotFound();
+        if (student == null) return NotFound();
 
-        return student;
+        return new StudentDTO(student);
     }
 
     // POST: api/todo
     [HttpPost]
-    public async Task<ActionResult<Student>> PostStudent(Student student)
+    public async Task<ActionResult<Student>> PostStudent(StudentDTO studentDTO)
     {
+        Student student = new(studentDTO);
+        
         _context.Student.Add(student);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, student);
+        return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, new StudentDTO(student));
     }
 
     // PUT: api/todo/2
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutStudent(int id, Student student)
+    public async Task<IActionResult> PutStudent(int id, StudentDTO studentDTO)
     {
-        if (id != student.Id)
-            return BadRequest();
+        if (id != studentDTO.Id) return BadRequest();
 
+        Student student = new(studentDTO);  
         _context.Entry(student).State = EntityState.Modified;
 
         try
@@ -77,12 +78,12 @@ public class TodoController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteStudent(int id)
     {
-        var todo = await _context.Student.FindAsync(id);
+        var student = await _context.Student.FindAsync(id);
 
-        if (todo == null)
+        if (student == null)
             return NotFound();
 
-        _context.Student.Remove(todo);
+        _context.Student.Remove(student);
         await _context.SaveChangesAsync();
 
         return NoContent();

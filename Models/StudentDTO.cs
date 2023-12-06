@@ -1,6 +1,6 @@
 namespace ApiUniversity.Models;
 
-public class Student
+public class StudentDTO
 {
     public int Id { get; set; }
     public string LastName { get; set; } = null!;
@@ -9,9 +9,9 @@ public class Student
     public List<Enrollment> Enrollments { get; set; } = new();
 
     // Default constructor
-    public Student() { }
+    public StudentDTO() { }
 
-    public Student(StudentDTO student){
+    public StudentDTO(Student student){
         Id = student.Id;
         LastName = student.LastName;
         FirstName = student.FirstName;
